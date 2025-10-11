@@ -1,0 +1,49 @@
+name: Deploy to VPS
+
+on:
+  push:
+    branches:
+      - main  
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v0.1.10
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_PORT || 22 }}
+          script: |
+            export NVM_DIR="$HOME/.nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+
+            cd ~/sirimba/api-sirimba
+
+            # Bersihkan dan tarik kode terbaru
+            git fetch --all
+            git reset --hard origin/main
+            git clean -fd
+            git pull origin main
+
+            # Instal dependensi Composer
+            composer install --no-interaction --prefer-dist --optimize-autoloader
+
+            # Hapus cache lama
+            rm -rf storage/logs/*.log
+            rm -rf bootstrap/cache/*
+
+            # Atur permission supaya tidak error
+            mkdir -p storage/framework/{cache,sessions,views}
+            chmod -R 775 storage bootstrap/cache
+            chown -R $USER:www-data storage bootstrap/cache
+
+            # Cache konfigurasi dan rute
+            php artisan config:cache
+            php artisan route:cache
