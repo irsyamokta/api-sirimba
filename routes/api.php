@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\CategoryController;
 
 Route::get('/', function () {
     return response()->json([
@@ -30,4 +31,15 @@ Route::prefix('users')->middleware(['auth:sanctum', 'role:super_admin|admin'])->
     Route::post('/create', [UserController::class, 'store']);
     Route::patch('/update/{id}', [UserController::class, 'update']);
     Route::delete('/delete/{id}', [UserController::class, 'destroy']);
+});
+
+// Categories
+Route::prefix('categories')->middleware(['auth:sanctum'])->group(function () {
+    Route::get('/', [CategoryController::class, 'index']);
+    Route::middleware('role:super_admin|admin')->group(function () {
+        Route::get('/{id}', [CategoryController::class, 'show']);
+        Route::post('/create', [CategoryController::class, 'store']);
+        Route::patch('/update/{id}', [CategoryController::class, 'update']);
+        Route::delete('/delete/{id}', [CategoryController::class, 'destroy']);
+    });
 });

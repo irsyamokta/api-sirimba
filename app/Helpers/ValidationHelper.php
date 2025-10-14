@@ -59,4 +59,23 @@ class ValidationHelper
             ]
         );
     }
+
+    public static function validateCategory($data, $isStore = false)
+    {
+        return Validator::make(
+            $data,
+            [
+                'category_name' => ($isStore ? 'required' : 'sometimes|required') . '|string|max:255',
+                'type' => ($isStore ? 'required' : 'sometimes|required') . '|string|in:income,expense',
+            ],
+            [
+                'category_name.required' => 'Nama kategori wajib diisi.',
+                'category_name.string' => 'Nama kategori harus berupa teks.',
+                'category_name.max' => 'Nama kategori tidak boleh lebih dari 255 karakter.',
+                'type.required' => 'Tipe kategori wajib diisi.',
+                'type.string' => 'Tipe kategori harus berupa teks.',
+                'type.in' => 'Tipe kategori harus berupa "income" atau "expense".',
+            ]
+        );
+    }
 }
