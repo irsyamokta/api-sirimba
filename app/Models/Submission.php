@@ -39,6 +39,10 @@ class Submission extends Model
         'amount' => 'float',
     ];
 
+    protected $hidden = [
+        'public_id',
+    ];
+
     public function member()
     {
         return $this->belongsTo(User::class, 'member_id');

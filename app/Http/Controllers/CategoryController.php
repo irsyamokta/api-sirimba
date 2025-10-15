@@ -84,7 +84,7 @@ class CategoryController extends Controller
 
             return response()->json([
                 'message' => 'Kategori berhasil ditambahkan.',
-            ], 200);
+            ], 201);
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Terjadi kesalahan.',
