@@ -5,6 +5,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\SubmissionController;
+use App\Http\Controllers\PriceController;
 
 Route::get('/', function () {
     return response()->json([
@@ -41,5 +43,27 @@ Route::prefix('categories')->middleware(['auth:sanctum'])->group(function () {
         Route::post('/create', [CategoryController::class, 'store']);
         Route::patch('/update/{id}', [CategoryController::class, 'update']);
         Route::delete('/delete/{id}', [CategoryController::class, 'destroy']);
+    });
+});
+
+// Submissions
+Route::prefix('submissions')->middleware(['auth:sanctum'])->group(function () {
+    Route::get('/', [SubmissionController::class, 'index']);
+    Route::middleware('role:super_admin|admin')->group(function () {
+        Route::get('/{id}', [SubmissionController::class, 'show']);
+        Route::post('/create', [SubmissionController::class, 'store']);
+        Route::patch('/update/{id}', [SubmissionController::class, 'update']);
+        Route::delete('/delete/{id}', [SubmissionController::class, 'destroy']);
+    });
+});
+
+// Prices
+Route::prefix('prices')->middleware(['auth:sanctum'])->group(function () {
+    Route::get('/', [PriceController::class, 'index']);
+    Route::middleware('role:super_admin|admin')->group(function () {
+        Route::get('/{id}', [PriceController::class, 'show']);
+        Route::post('/create', [PriceController::class, 'store']);
+        Route::patch('/update/{id}', [PriceController::class, 'update']);
+        Route::delete('/delete/{id}', [PriceController::class, 'destroy']);
     });
 });

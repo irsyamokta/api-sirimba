@@ -78,4 +78,39 @@ class ValidationHelper
             ]
         );
     }
+
+    public static function validateSubmission($data, $isStore = false)
+    {
+        return Validator::make(
+            $data,
+            [
+                'member_id' => ($isStore ? 'required|uuid' : 'sometimes|required|uuid') . '|exists:users,id',
+                'total_honey' => ($isStore ? 'required' : 'sometimes|required') . '|numeric',
+                'evidence' => ($isStore ? 'required' : 'sometimes|required') . '|mimetypes:image/jpeg,image/png,image/jpg|max:2048',
+            ],
+            [
+                'member_id.required' => 'ID anggota wajib diisi.',
+                'member_id.exists' => 'ID anggota tidak ditemukan.',
+                'total_honey.required' => 'Total api wajib diisi.',
+                'total_honey.numeric' => 'Total api harus berupa angka.',
+                'evidence.required' => 'Bukti wajib diisi.',
+                'evidence.mimetypes' => 'Bukti harus berupa file JPEG, PNG, atau JPG.',
+                'evidence.max' => 'Ukuran file bukti tidak boleh lebih dari 2 MB.',
+            ]
+        );
+    }
+
+    public static function validatePrice($data, $isStore = false)
+    {
+        return Validator::make(
+            $data,
+            [
+                'price' => ($isStore ? 'required' : 'sometimes|required') . '|numeric',
+            ],
+            [
+                'price.required' => 'Harga wajib diisi.',
+                'price.numeric' => 'Harga harus berupa angka.',
+            ]
+        );
+    }
 }
