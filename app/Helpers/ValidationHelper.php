@@ -32,8 +32,8 @@ class ValidationHelper
                 'gender' => ($isStore ? 'required' : 'sometimes|required') . '|in:male,female',
                 'birthdate' => ($isStore ? 'required' : 'sometimes|required') . '|string|date_format:Y-m-d',
                 'address' => ($isStore ? 'required' : 'sometimes|required') . '|string',
-                'password' => ($isStore ? 'required' : 'sometimes|required') . '|string|min:8|regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/',
                 'role' => ($isStore ? 'required' : 'sometimes|required') . '|in:super_admin,admin,member',
+                'password' => ($isStore ? 'required' : 'sometimes|required') . '|string|min:8|regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/',
                 'avatar' => ($isStore ? 'required' : 'sometimes|required') . '|mimetypes:image/jpeg,image/png,image/jpg|max:2048',
             ],
             [
@@ -91,8 +91,8 @@ class ValidationHelper
             [
                 'member_id.required' => 'ID anggota wajib diisi.',
                 'member_id.exists' => 'ID anggota tidak ditemukan.',
-                'total_honey.required' => 'Total api wajib diisi.',
-                'total_honey.numeric' => 'Total api harus berupa angka.',
+                'total_honey.required' => 'Total madu wajib diisi.',
+                'total_honey.numeric' => 'Total madu harus berupa angka.',
                 'evidence.required' => 'Bukti wajib diisi.',
                 'evidence.mimetypes' => 'Bukti harus berupa file JPEG, PNG, atau JPG.',
                 'evidence.max' => 'Ukuran file bukti tidak boleh lebih dari 2 MB.',
