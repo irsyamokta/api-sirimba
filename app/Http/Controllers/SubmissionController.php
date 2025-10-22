@@ -89,7 +89,13 @@ class SubmissionController extends Controller
         try {
             $validator = ValidationHelper::validateSubmission(request()->all(), true);
             if ($validator->fails()) {
-                return response()->json(['errors' => $validator->errors()], 422);
+                $errors = $validator->errors()->toArray();
+                $firstField = array_key_first($errors);
+                $firstMessage = $errors[$firstField][0];
+
+                return response()->json([
+                    'message' => $firstMessage
+                ], 422);
             }
 
             $data = $validator->validated();
@@ -135,7 +141,13 @@ class SubmissionController extends Controller
 
             $validator = ValidationHelper::validateSubmission(request()->all(), false);
             if ($validator->fails()) {
-                return response()->json(['errors' => $validator->errors()], 422);
+                $errors = $validator->errors()->toArray();
+                $firstField = array_key_first($errors);
+                $firstMessage = $errors[$firstField][0];
+
+                return response()->json([
+                    'message' => $firstMessage
+                ], 422);
             }
 
             $data = $validator->validated();

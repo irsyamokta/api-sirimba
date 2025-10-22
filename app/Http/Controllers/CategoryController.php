@@ -71,7 +71,13 @@ class CategoryController extends Controller
         try {
             $validator = ValidationHelper::validateCategory(request()->all(), true);
             if ($validator->fails()) {
-                return response()->json(['errors' => $validator->errors()], 422);
+                $errors = $validator->errors()->toArray();
+                $firstField = array_key_first($errors);
+                $firstMessage = $errors[$firstField][0];
+
+                return response()->json([
+                    'message' => $firstMessage
+                ], 422);
             }
 
             $data = $validator->validated();
@@ -103,7 +109,13 @@ class CategoryController extends Controller
 
             $validator = ValidationHelper::validateCategory(request()->all(), false);
             if ($validator->fails()) {
-                return response()->json(['errors' => $validator->errors()], 422);
+                $errors = $validator->errors()->toArray();
+                $firstField = array_key_first($errors);
+                $firstMessage = $errors[$firstField][0];
+
+                return response()->json([
+                    'message' => $firstMessage
+                ], 422);
             }
 
             $data = $validator->validated();
