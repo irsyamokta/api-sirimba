@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-
+use Illuminate\Support\Facades\Hash;
 use App\Helpers\ValidationHelper;
 use App\Models\User;
 use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
@@ -146,6 +146,10 @@ class UserController extends Controller
                 return response()->json(['message' => 'Nomor telepon sudah terdaftar.'], 422);
             }
 
+            if($request->has('password')) {
+                $data['password'] = Hash::make($data['password']);
+            }
+
             if ($request->hasFile('avatar')) {
                 if ($user->public_id) {
                     Cloudinary::uploadApi()->destroy($user->public_id);
@@ -166,6 +170,7 @@ class UserController extends Controller
                 'birthdate' => $data['birthdate'] ?? $user->birthdate,
                 'address' => $data['address'] ?? $user->address,
                 'role' => $data['role'] ?? $user->role,
+                'password' => $data['password'] ?? $user->password,
                 'avatar' => $imageUrl,
                 'public_id' => $publicId
             ]);
