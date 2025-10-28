@@ -18,6 +18,8 @@ class SubmissionController extends Controller
             $search = $request->query('search');
             $memberId = $request->query('member_id');
             $perPage = $request->query('per_page', 10);
+            $startDate = $request->query('start_date');
+            $endDate = $request->query('end_date');
 
             if ($memberId) {
                 if (in_array($user->role, ['admin', 'super_admin'])) {
@@ -43,6 +45,13 @@ class SubmissionController extends Controller
                         $memberQuery->where('name', 'like', '%' . $search . '%');
                     });
                 });
+            }
+
+            if ($startDate && $endDate) {
+                $start = Carbon::parse($startDate)->startOfDay();
+                $end = Carbon::parse($endDate)->endOfDay();
+
+                $query->whereBetween('submission_date', [$start, $end]);
             }
 
             $query->orderBy('submission_date', 'desc');
