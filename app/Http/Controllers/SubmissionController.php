@@ -20,6 +20,7 @@ class SubmissionController extends Controller
             $perPage = $request->query('per_page', 10);
             $startDate = $request->query('start_date');
             $endDate = $request->query('end_date');
+            $submissionId = $request->query('submission_id');
 
             if ($memberId) {
                 if (in_array($user->role, ['admin', 'super_admin'])) {
@@ -45,6 +46,10 @@ class SubmissionController extends Controller
                         $memberQuery->where('name', 'like', '%' . $search . '%');
                     });
                 });
+            }
+
+            if ($submissionId) {
+                $query->where('id', $submissionId);
             }
 
             if ($startDate && $endDate) {

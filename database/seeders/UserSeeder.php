@@ -49,21 +49,55 @@ class UserSeeder extends Seeder
 
         $admin->assignRole('admin');
 
-        // Member
-        $member = User::updateOrCreate(
+        // Member 1
+        $member1 = User::updateOrCreate(
             ['phone' => '0876543212'],
             [
                 'id' => (string) Str::uuid(),
-                'name' => 'Member',
+                'name' => 'Member 1',
                 'gender' => 'female',
-                'address' => 'Jl. Jalan Pekuncen',
-                'birthdate' => '2003-01-01',
+                'address' => 'Jl. Cemara',
+                'birthdate' => '2000-01-01',
                 'password' => Hash::make('Password123!'),
                 'role' => 'member',
                 'avatar' => null,
             ]
         );
 
-        $member->assignRole('member');
+        $member1->assignRole('member');
+
+        // Member 2
+        $member2 = User::updateOrCreate(
+            ['phone' => '0876543213'],
+            [
+                'id' => (string) Str::uuid(),
+                'name' => 'Member 2',
+                'gender' => 'female',
+                'address' => 'Jl. Bango',
+                'birthdate' => '2001-01-01',
+                'password' => Hash::make('Password123!'),
+                'role' => 'member',
+                'avatar' => null,
+            ]
+        );
+
+        $member2->assignRole('member');
+
+        // Member 3
+        $member3 = User::updateOrCreate(
+            ['phone' => '0876543214'],
+            [
+                'id' => (string) Str::uuid(),
+                'name' => 'Member 3',
+                'gender' => 'male',
+                'address' => 'Jl. Mawar',
+                'birthdate' => '1999-01-01',
+                'password' => Hash::make('Password123!'),
+                'role' => 'member',
+                'avatar' => null,
+            ]
+        );
+
+        $member3->assignRole('member');
     }
 }

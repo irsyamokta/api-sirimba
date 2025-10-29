@@ -58,7 +58,7 @@ class UserController extends Controller
 
     public function show(Request $request, $id)
     {
-        $user = User::find($id);
+        $user = User::with('submissions')->find($id);
         if (!$user) {
             return response()->json(['message' => 'Anggota tidak ditemukan.'], 404);
         }
@@ -71,7 +71,16 @@ class UserController extends Controller
             'birthdate' => $user->birthdate,
             'address' => $user->address,
             'role' => $user->role,
-            'avatar' => $user->avatar
+            'avatar' => $user->avatar,
+            'submissions' => $user->submissions->map(function ($submission) {
+                return [
+                    'id' => $submission->id,
+                    'total_honey' => $submission->total_honey,
+                    'submission_date' => $submission->submission_date,
+                    'amount' => $submission->amount,
+                    'evidence' => $submission->evidence,
+                ];
+            }),
         ];
 
         return response()->json($data, 200);
@@ -146,7 +155,7 @@ class UserController extends Controller
                 return response()->json(['message' => 'Nomor telepon sudah terdaftar.'], 422);
             }
 
-            if($request->has('password')) {
+            if ($request->has('password')) {
                 $data['password'] = Hash::make($data['password']);
             }
 
