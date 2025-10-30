@@ -140,7 +140,7 @@ class UserController extends Controller
                 ], 404);
             }
 
-            $validator = ValidationHelper::validateUser(request()->all(), false);
+            $validator = ValidationHelper::validateUser($request->all(), false);
             if ($validator->fails()) {
                 $errors = $validator->errors()->toArray();
                 $firstField = array_key_first($errors);
@@ -152,7 +152,48 @@ class UserController extends Controller
             }
 
             $data = $validator->validated();
-            $user->update($data);
+            $imageUrl = $user->avatar;
+            $publicId = $user->public_id;
+
+            if (!empty($data['phone']) && User::where('phone', $data['phone'])->where('id', '!=', $user->id)->exists()) {
+                return response()->json(['message' => 'Nomor telepon sudah terdaftar.'], 422);
+            }
+
+            if ($user->role === 'member') {
+                $allowed = ['name', 'gender', 'birthdate'];
+
+                $disallowedFields = array_diff(array_keys($data), $allowed);
+                if (!empty($disallowedFields)) {
+                    return response()->json([
+                        'message' => 'Anggota tidak diizinkan mengubah field: ' . implode(', ', $disallowedFields)
+                    ], 403);
+                }
+
+                if ($request->hasFile('avatar')) {
+                    return response()->json(['message' => 'Anggota tidak diizinkan mengubah avatar.'], 403);
+                }
+            } else {
+                $allowed = ['name', 'phone', 'gender', 'birthdate', 'address'];
+            }
+
+            if ($user->role !== 'member' && $request->hasFile('avatar')) {
+                if ($user->public_id) {
+                    Cloudinary::uploadApi()->destroy($user->public_id);
+                }
+
+                $uploaded = Cloudinary::uploadApi()->upload($request->file('avatar')->getRealPath(), [
+                    'folder' => 'images/avatar',
+                ]);
+
+                $imageUrl = $uploaded['secure_url'];
+                $publicId = $uploaded['public_id'];
+            }
+
+            $filteredData = array_intersect_key($data, array_flip($allowed));
+            $filteredData['avatar'] = $imageUrl;
+            $filteredData['public_id'] = $publicId;
+
+            $user->update($filteredData);
 
             return response()->json([
                 'message' => 'Profil berhasil diperbarui.',
