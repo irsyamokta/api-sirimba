@@ -27,12 +27,15 @@ Route::prefix('auth')->group(function () {
 });
 
 // Users
-Route::prefix('users')->middleware(['auth:sanctum', 'role:super_admin|admin'])->group(function () {
-    Route::get('/', [UserController::class, 'index']);
-    Route::get('/{id}', [UserController::class, 'show']);
-    Route::post('/create', [UserController::class, 'store']);
-    Route::patch('/update/{id}', [UserController::class, 'update']);
-    Route::delete('/delete/{id}', [UserController::class, 'destroy']);
+Route::prefix('users')->middleware('auth:sanctum')->group(function () {
+    Route::patch('/update', [UserController::class, 'update'])->middleware('role:super_admin|admin|member');
+    Route::middleware('role:super_admin|admin')->group(function () {
+        Route::get('/', [UserController::class, 'index']);
+        Route::get('/{id}', [UserController::class, 'show']);
+        Route::post('/create', [UserController::class, 'store']);
+        Route::patch('/update/{id}', [UserController::class, 'updateUserById']);
+        Route::delete('/delete/{id}', [UserController::class, 'destroy']);
+    });
 });
 
 // Categories
