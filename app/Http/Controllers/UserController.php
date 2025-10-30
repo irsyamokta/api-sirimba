@@ -72,6 +72,8 @@ class UserController extends Controller
             'address' => $user->address,
             'role' => $user->role,
             'avatar' => $user->avatar,
+            'created_at' => $user->created_at,
+            'updated_at' => $user->updated_at,
             'submissions' => $user->submissions->map(function ($submission) {
                 return [
                     'id' => $submission->id,
@@ -128,7 +130,42 @@ class UserController extends Controller
         }
     }
 
-    public function update(Request $request, $id)
+    public function update(Request $request)
+    {
+        try {
+            $user = auth()->user();
+            if (!$user) {
+                return response()->json([
+                    'message' => 'Anggota tidak ditemukan.'
+                ], 404);
+            }
+
+            $validator = ValidationHelper::validateUser(request()->all(), false);
+            if ($validator->fails()) {
+                $errors = $validator->errors()->toArray();
+                $firstField = array_key_first($errors);
+                $firstMessage = $errors[$firstField][0];
+
+                return response()->json([
+                    'message' => $firstMessage
+                ], 422);
+            }
+
+            $data = $validator->validated();
+            $user->update($data);
+
+            return response()->json([
+                'message' => 'Profil berhasil diperbarui.',
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Terjadi kesalahan.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function updateUserById(Request $request, $id)
     {
         try {
             $user = User::find($id);

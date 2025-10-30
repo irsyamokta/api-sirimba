@@ -20,7 +20,6 @@ class SubmissionController extends Controller
             $perPage = $request->query('per_page', 10);
             $startDate = $request->query('start_date');
             $endDate = $request->query('end_date');
-            $submissionId = $request->query('submission_id');
 
             if ($memberId) {
                 if (in_array($user->role, ['admin', 'super_admin'])) {
@@ -42,14 +41,13 @@ class SubmissionController extends Controller
                 $query->where('member_id', $user->id);
             } else {
                 $query->when($search, function ($q) use ($search) {
-                    $q->whereHas('member', function ($memberQuery) use ($search) {
-                        $memberQuery->where('name', 'like', '%' . $search . '%');
+                    $q->where(function ($subQuery) use ($search) {
+                        $subQuery->whereHas('member', function ($memberQuery) use ($search) {
+                            $memberQuery->where('name', 'like', '%' . $search . '%');
+                        })
+                            ->orWhere('id', $search);
                     });
                 });
-            }
-
-            if ($submissionId) {
-                $query->where('id', $submissionId);
             }
 
             if ($startDate && $endDate) {
