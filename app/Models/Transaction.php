@@ -15,7 +15,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
  * @property string $type
  * @property string $evidence
  * @property string $payment_method
- * @property string $user_id
+ * @property string $member_id
  * @property string|null $public_id
  * @property \Carbon\Carbon $created_at
  * @property \Carbon\Carbon $updated_at
@@ -38,7 +38,7 @@ class Transaction extends Model
         'type',
         'evidence',
         'payment_method',
-        'user_id',
+        'member_id',
         'public_id',
     ];
 
@@ -48,13 +48,17 @@ class Transaction extends Model
         'payment_method' => 'string',
     ];
 
+    protected $hidden = [
+        'public_id',
+    ];
+
     public function category()
     {
         return $this->belongsTo(Category::class, 'category_id');
     }
 
-    public function user()
+    public function member()
     {
-        return $this->belongsTo(User::class, 'user_id');
+        return $this->belongsTo(User::class, 'member_id');
     }
 }

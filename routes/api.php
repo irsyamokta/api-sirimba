@@ -7,6 +7,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\SubmissionController;
 use App\Http\Controllers\PriceController;
+use App\Http\Controllers\TransactionController;
 
 Route::get('/', function () {
     return response()->json([
@@ -68,5 +69,16 @@ Route::prefix('prices')->middleware(['auth:sanctum'])->group(function () {
         Route::post('/create', [PriceController::class, 'store']);
         Route::patch('/update/{id}', [PriceController::class, 'update']);
         Route::delete('/delete/{id}', [PriceController::class, 'destroy']);
+    });
+});
+
+// Transactions
+Route::prefix('transactions')->middleware(['auth:sanctum'])->group(function () {
+    Route::get('/', [TransactionController::class, 'index']);
+    Route::middleware('role:super_admin|admin')->group(function () {
+        Route::get('/{id}', [TransactionController::class, 'show']);
+        Route::post('/create', [TransactionController::class, 'store']);
+        Route::patch('/update/{id}', [TransactionController::class, 'update']);
+        Route::delete('/delete/{id}', [TransactionController::class, 'destroy']);
     });
 });

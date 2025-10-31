@@ -80,4 +80,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(Submission::class, 'member_id');
     }
+
+    public function transactions()
+    {
+        return $this->hasMany(Transaction::class, 'member_id');
+    }
 }

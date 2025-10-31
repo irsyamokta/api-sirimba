@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use App\Helpers\ValidationHelper;
 use App\Models\User;
+use App\Models\Submission;
+use App\Models\Transaction;
 use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 
 class UserController extends Controller
@@ -39,8 +41,32 @@ class UserController extends Controller
 
             $users = $query->paginate($perPage);
 
+            $usersData = collect($users->items())->map(function ($user) {
+                $totalRevenue = Submission::where('member_id', $user->id)->sum('amount');
+                $totalWithdrawn = Transaction::where('type', 'expense')
+                    ->where('member_id', $user->id)
+                    ->sum('amount');
+
+                $remainingLimit = max($totalRevenue - $totalWithdrawn, 0);
+
+                return [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'phone' => $user->phone,
+                    'role' => $user->role,
+                    'gender' => $user->gender,
+                    'address' => $user->address,
+                    'birthdate' => $user->birthdate,
+                    'avatar' => $user->avatar,
+                    'created_at' => $user->created_at,
+                    'total_amount' => $totalRevenue,
+                    'total_withdrawn' => $totalWithdrawn,
+                    'remaining_limit' => $remainingLimit,
+                ];
+            });
+
             return response()->json([
-                'users' => $users->items(),
+                'users' => $usersData,
                 'pagination' => [
                     'current_page' => $users->currentPage(),
                     'per_page' => $users->perPage(),
@@ -58,34 +84,64 @@ class UserController extends Controller
 
     public function show(Request $request, $id)
     {
-        $user = User::with('submissions')->find($id);
-        if (!$user) {
-            return response()->json(['message' => 'Anggota tidak ditemukan.'], 404);
+        try {
+            $user = User::with(['submissions', 'transactions.category', 'transactions.member'])->find($id);
+
+            if (!$user) {
+                return response()->json(['message' => 'Anggota tidak ditemukan.'], 404);
+            }
+
+            $totalRevenue = Submission::where('member_id', $user->id)->sum('amount');
+            $totalWithdrawn = Transaction::where('type', 'expense')
+                ->where('member_id', $user->id)
+                ->sum('amount');
+
+            $remainingLimit = max($totalRevenue - $totalWithdrawn, 0);
+
+            $data = [
+                'id' => $user->id,
+                'name' => $user->name,
+                'phone' => $user->phone,
+                'role' => $user->role,
+                'gender' => $user->gender,
+                'address' => $user->address,
+                'birthdate' => $user->birthdate,
+                'avatar' => $user->avatar,
+                'created_at' => $user->created_at,
+                'total_amount' => $totalRevenue,
+                'total_withdrawn' => $totalWithdrawn,
+                'remaining_limit' => $remainingLimit,
+                'submissions' => $user->submissions->map(function ($submission) {
+                    return [
+                        'id' => $submission->id,
+                        'total_honey' => $submission->total_honey,
+                        'submission_date' => $submission->submission_date,
+                        'amount' => $submission->amount,
+                        'evidence' => $submission->evidence,
+                    ];
+                }),
+                'transactions' => $user->transactions->map(function ($transaction) {
+                    return [
+                        'id' => $transaction->id,
+                        'amount' => $transaction->amount,
+                        'transaction_date' => $transaction->transaction_date,
+                        'type' => $transaction->type,
+                        'category_name' => $transaction->category->category_name,
+                        'payment_method' => $transaction->payment_method,
+                        'note' => $transaction->note,
+                        'member' => $transaction->member->name,
+                        'evidence' => $transaction->evidence,
+                    ];
+                })
+            ];
+
+            return response()->json($data, 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Terjadi kesalahan.',
+                'error' => $e->getMessage()
+            ], 500);
         }
-
-        $data = [
-            'id' => $user->id,
-            'name' => $user->name,
-            'phone' => $user->phone,
-            'gender' => $user->gender,
-            'birthdate' => $user->birthdate,
-            'address' => $user->address,
-            'role' => $user->role,
-            'avatar' => $user->avatar,
-            'created_at' => $user->created_at,
-            'updated_at' => $user->updated_at,
-            'submissions' => $user->submissions->map(function ($submission) {
-                return [
-                    'id' => $submission->id,
-                    'total_honey' => $submission->total_honey,
-                    'submission_date' => $submission->submission_date,
-                    'amount' => $submission->amount,
-                    'evidence' => $submission->evidence,
-                ];
-            }),
-        ];
-
-        return response()->json($data, 200);
     }
 
     public function store(Request $request)
