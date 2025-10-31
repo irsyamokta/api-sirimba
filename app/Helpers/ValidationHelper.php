@@ -113,4 +113,45 @@ class ValidationHelper
             ]
         );
     }
+
+    public static function validateTransaction($data, $isStore = false)
+    {
+        return Validator::make(
+            $data,
+            [
+                'title' => ($isStore ? 'required' : 'sometimes|required') . '|string|max:255',
+                'amount' => ($isStore ? 'required' : 'sometimes|required') . '|numeric',
+                'transaction_date' => ($isStore ? 'required' : 'sometimes|required') . '|string|date_format:Y-m-d',
+                'category_id' => ($isStore ? 'required|uuid' : 'sometimes|required|uuid') . '|exists:categories,id',
+                'note' => ($isStore ? 'nullable' : 'sometimes|nullable') . '|string|max:255',
+                'type' => ($isStore ? 'required' : 'sometimes|required') . '|string|in:income,expense',
+                'evidence' => ($isStore ? 'required' : 'sometimes|required') . '|mimetypes:image/jpeg,image/png,image/jpg|max:2048',
+                'payment_method' => ($isStore ? 'required' : 'sometimes|required') . '|string|in:cash,bank_transfer',
+                'member_id' => ($isStore ? 'nullable|uuid' : 'sometimes|nullable|uuid') . '|exists:users,id',
+            ],
+            [
+                'title.required' => 'Judul wajib diisi.',
+                'title.string' => 'Judul harus berupa teks.',
+                'title.max' => 'Judul tidak boleh lebih dari 255 karakter.',
+                'amount.required' => 'Jumlah wajib diisi.',
+                'amount.numeric' => 'Jumlah harus berupa angka.',
+                'transaction_date.required' => 'Tanggal transaksi wajib diisi.',
+                'transaction_date.date_format' => 'Format tanggal transaksi tidak valid.',
+                'category_id.required' => 'ID kategori wajib diisi.',
+                'category_id.exists' => 'ID kategori tidak ditemukan.',
+                'note.string' => 'Catatan harus berupa teks.',
+                'note.max' => 'Catatan tidak boleh lebih dari 255 karakter.',
+                'type.required' => 'Tipe transaksi wajib diisi.',
+                'type.string' => 'Tipe transaksi harus berupa teks.',
+                'type.in' => 'Tipe transaksi harus berupa "income" atau "expense".',
+                'evidence.required' => 'Bukti wajib diisi.',
+                'evidence.mimetypes' => 'Bukti harus berupa file JPEG, PNG, atau JPG.',
+                'evidence.max' => 'Ukuran file bukti tidak boleh lebih dari 2 MB.',
+                'payment_method.required' => 'Metode pembayaran wajib diisi.',
+                'payment_method.string' => 'Metode pembayaran harus berupa teks.',
+                'payment_method.in' => 'Metode pembayaran harus berupa "cash" atau "bank_transfer".',
+                'member_id.exists' => 'ID anggota tidak ditemukan.',
+            ]
+        );
+    }
 }
