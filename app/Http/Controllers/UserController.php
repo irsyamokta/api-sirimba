@@ -123,6 +123,7 @@ class UserController extends Controller
                 'transactions' => $user->transactions->map(function ($transaction) {
                     return [
                         'id' => $transaction->id,
+                        'title' => $transaction->title,
                         'amount' => $transaction->amount,
                         'transaction_date' => $transaction->transaction_date,
                         'type' => $transaction->type,
