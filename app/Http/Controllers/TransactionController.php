@@ -195,24 +195,30 @@ class TransactionController extends Controller
 
             if ($data['type'] === 'expense' && isset($data['member_id'])) {
                 $member = User::find($data['member_id']);
-
                 if (!$member) {
-                    return response()->json([
-                        'message' => 'Anggota tidak ditemukan.'
-                    ], 404);
+                    return response()->json(['message' => 'Anggota tidak ditemukan.'], 404);
                 }
 
-                $totalAmount = Submission::where('member_id', $member->id)->sum('amount');
+                $totalAmount = (int) Submission::where('member_id', $member->id)->sum('amount');
 
-                $totalWithdrawn = Transaction::where('type', 'expense')
+                if ((int)$data['amount'] > $totalAmount) {
+                    return response()->json([
+                        'message' => 'Jumlah penarikan tidak boleh melebihi total pengajuan sebesar: '
+                            . number_format($totalAmount, 0, ',', '.')
+                    ], 400);
+                }
+
+                $totalWithdrawnExcludingThis = (int) Transaction::where('type', 'expense')
                     ->where('member_id', $member->id)
+                    ->where('id', '!=', $transaction->id)
                     ->sum('amount');
 
-                $remainingLimit = $totalAmount - $totalWithdrawn;
+                $remainingLimit = $totalAmount - $totalWithdrawnExcludingThis;
 
-                if ($data['amount'] > $remainingLimit) {
+                if ((int)$data['amount'] > $remainingLimit) {
                     return response()->json([
-                        'message' => 'Jumlah penarikan melebihi batas maksimal. Maksimal penarikan tersisa: ' . number_format($remainingLimit, 0, ',', '.')
+                        'message' => 'Jumlah penarikan melebihi batas maksimal. Maksimal penarikan tersisa: '
+                            . number_format($remainingLimit, 0, ',', '.')
                     ], 400);
                 }
             }
