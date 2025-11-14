@@ -47,11 +47,13 @@ class TransactionController extends Controller
             }
 
             if ($type) {
-                $query->where('type', $type);
+                $typeValues = is_array($type) ? $type : explode(',', $type);
+                $query->whereIn('type', $typeValues);
             }
 
             if ($categoryId) {
-                $query->where('category_id', $categoryId);
+                $categoryValues = is_array($categoryId) ? $categoryId : explode(',', $categoryId);
+                $query->whereIn('category_id', $categoryValues);
             }
 
             $query->orderBy('transaction_date', 'desc');
