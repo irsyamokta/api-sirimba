@@ -15,12 +15,18 @@ class UserController extends Controller
     public function index(Request $request)
     {
         try {
+            $isAdmin = auth()->user()->role === 'admin';
+
             $search = $request->query('search');
             $role = $request->query('role');
             $gender = $request->query('gender');
             $perPage = $request->query('per_page', 10);
 
             $query = User::query();
+
+            if ($isAdmin) {
+                $query->where('role', '!=', 'super_admin');
+            }
 
             if ($search) {
                 $query->where(function ($q) use ($search) {
@@ -271,6 +277,14 @@ class UserController extends Controller
                 return response()->json(['message' => 'Anggota tidak ditemukan.'], 404);
             }
 
+            $isAdmin = auth()->user()->role === 'admin';
+
+            if ($isAdmin && $user->role === 'super_admin') {
+                return response()->json([
+                    'message' => 'Anda tidak memiliki izin untuk mengedit user super admin.'
+                ], 403);
+            }
+
             $validator = ValidationHelper::validateUser(request()->all(), false);
             if ($validator->fails()) {
                 $errors = $validator->errors()->toArray();
@@ -336,6 +350,14 @@ class UserController extends Controller
             $user = User::find($id);
             if (!$user) {
                 return response()->json(['message' => 'Anggota tidak ditemukan.'], 404);
+            }
+
+            $isAdmin = auth()->user()->role === 'admin';
+
+            if ($isAdmin && $user->role === 'super_admin') {
+                return response()->json([
+                    'message' => 'Anda tidak memiliki izin untuk menghapus user super admin.'
+                ], 403);
             }
 
             if ($user->public_id) {
