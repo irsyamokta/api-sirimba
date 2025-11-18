@@ -1,4 +1,4 @@
-name: Deploy to VPS
+name: Deploy via Docker
 
 on:
   push:
@@ -21,31 +21,25 @@ jobs:
           key: ${{ secrets.VPS_SSH_KEY }}
           port: ${{ secrets.VPS_PORT || 22 }}
           script: |
-            export NVM_DIR="$HOME/.nvm"
-            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+            cd ~/apps/api-sirimba
 
-            cd ~/sirimba/api-sirimba
-
-            # Bersihkan dan tarik kode terbaru
+            # Pull kode terbaru
             git fetch --all
             git reset --hard origin/main
             git clean -fd
             git pull origin main
 
-            # Instal dependensi Composer
-            composer install --no-interaction --prefer-dist --optimize-autoloader
+            # Build ulang Docker image Laravel
+            docker-compose build --no-cache app
 
-            # Hapus cache lama
-            rm -rf storage/logs/*.log
-            rm -rf bootstrap/cache/*
+            # Jalankan container terbaru
+            docker-compose up -d
 
-            # Atur permission supaya tidak error
-            mkdir -p storage/framework/{cache,sessions,views}
-            chmod -R 775 storage bootstrap/cache
-            chown -R $USER:www-data storage bootstrap/cache
+            # Jalankan migrasi dan seed tanpa menghapus database
+            docker-compose exec -T app php artisan migrate --force
+            docker-compose exec -T app php artisan db:seed --force
 
-            # Cache konfigurasi dan rute
-            php artisan migrate:fresh --seed
-            php artisan config:clear
-            php artisan config:cache
-            php artisan route:cache
+            # Clear cache Laravel
+            docker-compose exec -T app php artisan config:clear
+            docker-compose exec -T app php artisan config:cache
+            docker-compose exec -T app php artisan route:cache
