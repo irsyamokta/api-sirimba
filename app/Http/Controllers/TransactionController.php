@@ -31,15 +31,22 @@ class TransactionController extends Controller
 
             if ($user->role === 'member') {
                 $query->where('member_id', $user->id);
-            } else {
-                $query->when($search, function ($q) use ($search) {
-                    $q->where('title', 'like', "%{$search}%")
-                        ->orWhereHas('member', function ($memberQuery) use ($search) {
-                            $memberQuery->where('name', 'like', "%{$search}%");
-                        })
-                        ->orWhere('id', $search);
-                });
             }
+
+            $query->when($search, function ($q) use ($search, $user) {
+
+                if ($user->role === 'member') {
+                    $q->where('title', 'like', "%{$search}%");
+                } else {
+                    $q->where(function ($sub) use ($search) {
+                        $sub->where('title', 'like', "%{$search}%")
+                            ->orWhereHas('member', function ($m) use ($search) {
+                                $m->where('name', 'like', "%{$search}%");
+                            })
+                            ->orWhere('id', $search);
+                    });
+                }
+            });
 
             if ($startDate && $endDate) {
                 $start = Carbon::parse($startDate)->startOfDay();
