@@ -34,11 +34,13 @@ class AuthController extends Controller
                 return response()->json(['message' => 'Nomor telepon atau kata sandi salah.'], 401);
             }
 
-            $token = $user->createToken('auth_token', ['*'], now()->addHours(6))->plainTextToken;
+            $expiration = now()->addHours(6);
+            $token = $user->createToken('auth_token', ['*'], $expiration)->plainTextToken;
 
             return response()->json([
                 'message' => 'Login berhasil.',
-                'token' => $token
+                'token' => $token,
+                'expiresAt' => $expiration->timestamp
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
